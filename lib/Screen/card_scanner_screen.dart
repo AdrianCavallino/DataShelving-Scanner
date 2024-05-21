@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
+import 'package:google_mlkit_entity_extraction/google_mlkit_entity_extraction.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
 class CardScanner extends StatefulWidget {
@@ -18,12 +19,15 @@ class CardScanner extends StatefulWidget {
 
 class _CardScannerScreenState extends State<CardScanner> {
   late TextRecognizer textRecognizer;
+  late EntityExtractor entityExtractor;
 
   @override
   void initState() {
     super.initState();
 
     textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
+    entityExtractor =
+        EntityExtractor(language: EntityExtractorLanguage.english);
     doTextRecognition();
   }
 
@@ -34,23 +38,22 @@ class _CardScannerScreenState extends State<CardScanner> {
     final RecognizedText recognizedText =
         await textRecognizer.processImage(inputImage);
 
-    results = recognizedText.text;
+    //results = recognizedText.text;
+    final List<EntityAnnotation> annotations =
+        await entityExtractor.annotateText(results);
+
+    for (final annotation in annotations) {
+      annotation.start;
+      annotation.end;
+      annotation.text;
+      for (final entity in annotation.entities) {
+        results += "${entity.type.name}\n${entity.rawValue}\n\n";
+      }
+    }
+
     setState(() {
       results;
     });
-    for (TextBlock block in recognizedText.blocks) {
-      final Rect rect = block.boundingBox;
-      final List<Point<int>> cornerPoints = block.cornerPoints;
-      final String text = block.text;
-      final List<String> languages = block.recognizedLanguages;
-
-      for (TextLine line in block.lines) {
-        // Same getters as TextBlock
-        for (TextElement element in line.elements) {
-          // Same getters as TextBlock
-        }
-      }
-    }
   }
 
   @override
