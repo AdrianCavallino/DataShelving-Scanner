@@ -1,10 +1,15 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:io';
 
+import 'package:data_shelving/Screen/card_scanner_screen.dart';
 import 'package:data_shelving/Screen/recognizer_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:image_picker/image_picker.dart';
+
+enum Feature { scanner, recognize, enhance }
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,6 +26,8 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     imagePicker = ImagePicker();
   }
+
+  var currentFeature = Feature.scanner;
 
   @override
   Widget build(BuildContext context) {
@@ -42,59 +49,83 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   InkWell(
-                    onTap: () {},
+                    onTap: () {
+                      setState(() {
+                        currentFeature = Feature.scanner;
+                      });
+                    },
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
+                      children: [
                         Icon(
                           Icons.scanner,
                           size: 25,
-                          color: Colors.white,
+                          color: (currentFeature == Feature.scanner)
+                              ? Colors.black
+                              : Colors.white,
                         ),
                         Text(
                           'Scan',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: (currentFeature == Feature.scanner)
+                                ? Colors.black
+                                : Colors.white,
                           ),
                         )
                       ],
                     ),
                   ),
                   InkWell(
-                    onTap: () {},
+                    onTap: () {
+                      setState(() {
+                        currentFeature = Feature.recognize;
+                      });
+                    },
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
+                      children: [
                         Icon(
                           Icons.document_scanner,
                           size: 25,
-                          color: Colors.white,
+                          color: (currentFeature == Feature.recognize)
+                              ? Colors.black
+                              : Colors.white,
                         ),
                         Text(
                           'Recognize',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: (currentFeature == Feature.recognize)
+                                ? Colors.black
+                                : Colors.white,
                           ),
                         )
                       ],
                     ),
                   ),
                   InkWell(
-                    onTap: () {},
+                    onTap: () {
+                      setState(() {
+                        currentFeature = Feature.enhance;
+                      });
+                    },
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
+                      children: [
                         Icon(
                           Icons.assignment_sharp,
                           size: 25,
-                          color: Colors.white,
+                          color: (currentFeature == Feature.enhance)
+                              ? Colors.black
+                              : Colors.white,
                         ),
                         Text(
                           'Enhance',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: (currentFeature == Feature.enhance)
+                                ? Colors.black
+                                : Colors.white,
                           ),
-                        )
+                        ),
                       ],
                     ),
                   ),
@@ -149,6 +180,17 @@ class _HomeScreenState extends State<HomeScreen> {
                         File image = File(xFile.path);
                         Navigator.push(context,
                             MaterialPageRoute(builder: (ctx) {
+                          switch (currentFeature) {
+                            case Feature.scanner:
+                              CardScanner(image);
+                              break;
+                            case Feature.recognize:
+                              RecognizerScreen(image);
+                              break;
+                            default:
+                              CardScanner(image);
+                              break;
+                          }
                           return RecognizerScreen(image);
                         }));
                       }

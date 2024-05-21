@@ -7,16 +7,16 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
-class RecognizerScreen extends StatefulWidget {
+class CardScanner extends StatefulWidget {
   File image;
 
-  RecognizerScreen(this.image, {super.key});
+  CardScanner(this.image, {super.key});
 
   @override
-  State<RecognizerScreen> createState() => _RecognizerScreenState();
+  State<CardScanner> createState() => _CardScannerScreenState();
 }
 
-class _RecognizerScreenState extends State<RecognizerScreen> {
+class _CardScannerScreenState extends State<CardScanner> {
   late TextRecognizer textRecognizer;
 
   @override
@@ -58,7 +58,7 @@ class _RecognizerScreenState extends State<RecognizerScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blueAccent,
-        title: const Text('Recognizer'),
+        title: const Text('Scanner'),
       ),
       body: SingleChildScrollView(
         child: Container(
