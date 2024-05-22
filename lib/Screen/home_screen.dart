@@ -5,8 +5,6 @@ import 'dart:io';
 import 'package:data_shelving/Screen/card_scanner_screen.dart';
 import 'package:data_shelving/Screen/recognizer_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:image_picker/image_picker.dart';
 
 enum Feature { scanner, recognize, enhance }

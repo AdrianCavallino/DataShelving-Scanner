@@ -11,7 +11,8 @@ dependencies:
     sdk: flutter
   google_mlkit_entity_extraction: ^0.13.0
   google_mlkit_text_recognition: ^0.13.0
-  image_picker: ^1.0.4
+  image_editor_plus: ^1.0.6
+  image_picker: ^1.1.1
 
 dev_dependencies:
   flutter_test:
