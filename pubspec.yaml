@@ -7,11 +7,14 @@ environment:
   sdk: '>=2.19.4 <3.0.0'
 
 dependencies:
+  camera: ^0.11.0
   flutter:
     sdk: flutter
   google_mlkit_entity_extraction: ^0.13.0
   google_mlkit_text_recognition: ^0.13.0
+  image: ^4.2.0
   image_editor_plus: ^1.0.6
+  image_gallery_saver: ^2.0.3
   image_picker: ^1.1.1
 
 dev_dependencies:

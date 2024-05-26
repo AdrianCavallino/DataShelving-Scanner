@@ -2,9 +2,12 @@
 
 import 'dart:io';
 
+import 'package:camera/camera.dart';
 import 'package:data_shelving/Screen/card_scanner_screen.dart';
+import 'package:data_shelving/Screen/enhance_screen.dart';
 import 'package:data_shelving/Screen/recognizer_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:image_editor_plus/image_editor_plus.dart';
 import 'package:image_picker/image_picker.dart';
 
 enum Feature { scanner, recognize, enhance }
@@ -18,11 +21,39 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late ImagePicker imagePicker;
+  late List<CameraDescription> cameras;
+  late CameraController controller;
+  bool isInit = false;
 
   @override
   void initState() {
     super.initState();
     imagePicker = ImagePicker();
+    initializeCamera();
+  }
+
+  initializeCamera() async {
+    cameras = await availableCameras();
+    controller = CameraController(cameras[0], ResolutionPreset.max);
+    controller.initialize().then((_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        isInit = true;
+      });
+    }).catchError((Object e) {
+      if (e is CameraException) {
+        switch (e.code) {
+          case 'CameraAccessDenied':
+            // Access Error Handle
+            break;
+          default:
+            // Handle other errors here
+            break;
+        }
+      }
+    });
   }
 
   var currentFeature = Feature.scanner;
@@ -133,8 +164,16 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           Card(
             color: Colors.black,
-            child: Container(
-              height: MediaQuery.of(context).size.height - 250,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                height: MediaQuery.of(context).size.height - 250,
+                child: isInit
+                    ? AspectRatio(
+                        aspectRatio: controller.value.aspectRatio,
+                        child: CameraPreview(controller))
+                    : Container(),
+              ),
             ),
           ),
           Card(
@@ -154,15 +193,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   InkWell(
                     onTap: () async {
-                      XFile? xFile = await imagePicker.pickImage(
-                          source: ImageSource.camera);
-                      if (xFile != null) {
-                        File image = File(xFile.path);
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (ctx) {
-                          return RecognizerScreen(image);
-                        }));
-                      }
+                      await controller.takePicture().then((value) {
+                        if (value != null) {
+                          File image = File(value.path);
+                          processImage(image);
+                        }
+                      });
                     },
                     child: const Icon(
                       Icons.camera,
@@ -174,23 +210,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     onTap: () async {
                       XFile? xFile = await imagePicker.pickImage(
                           source: ImageSource.gallery);
+
                       if (xFile != null) {
                         File image = File(xFile.path);
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (ctx) {
-                          switch (currentFeature) {
-                            case Feature.scanner:
-                              CardScanner(image);
-                              break;
-                            case Feature.recognize:
-                              RecognizerScreen(image);
-                              break;
-                            default:
-                              CardScanner(image);
-                              break;
-                          }
-                          return RecognizerScreen(image);
-                        }));
+
+                        processImage(image);
                       }
                     },
                     child: const Icon(
@@ -206,5 +230,39 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+  }
+
+  processImage(File imageFile) async {
+    final editedImage = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ImageCropper(
+          image: imageFile.readAsBytesSync(), // <-- Uint8List of image
+        ),
+      ),
+    );
+
+    if (editedImage == null) {
+      return;
+    }
+    imageFile.writeAsBytes(editedImage);
+    Navigator.push(context, MaterialPageRoute(builder: (ctx) {
+      Widget selectedWidget;
+      switch (currentFeature) {
+        case Feature.scanner:
+          selectedWidget = CardScanner(imageFile);
+          break;
+        case Feature.recognize:
+          selectedWidget = RecognizerScreen(imageFile);
+          break;
+        case Feature.enhance:
+          selectedWidget = EnhanceScreen(imageFile);
+          break;
+        default:
+          selectedWidget = RecognizerScreen(imageFile);
+          break;
+      }
+      return selectedWidget;
+    }));
   }
 }
